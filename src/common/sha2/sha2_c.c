@@ -17,11 +17,17 @@
 #include <string.h>
 
 static uint32_t load_bigendian_32(const uint8_t *x) {
+	if (x == NULL) {
+		return 0;
+	}
 	return (uint32_t)(x[3]) | (((uint32_t)(x[2])) << 8) |
 	       (((uint32_t)(x[1])) << 16) | (((uint32_t)(x[0])) << 24);
 }
 
 static uint64_t load_bigendian_64(const uint8_t *x) {
+	if (x == NULL) {
+		return 0;
+	}
 	return (uint64_t)(x[7]) | (((uint64_t)(x[6])) << 8) |
 	       (((uint64_t)(x[5])) << 16) | (((uint64_t)(x[4])) << 24) |
 	       (((uint64_t)(x[3])) << 32) | (((uint64_t)(x[2])) << 40) |
@@ -29,6 +35,9 @@ static uint64_t load_bigendian_64(const uint8_t *x) {
 }
 
 static void store_bigendian_32(uint8_t *x, uint64_t u) {
+	if (x == NULL) {
+		return;
+	}
 	x[3] = (uint8_t) u;
 	u >>= 8;
 	x[2] = (uint8_t) u;
@@ -39,6 +48,9 @@ static void store_bigendian_32(uint8_t *x, uint64_t u) {
 }
 
 static void store_bigendian_64(uint8_t *x, uint64_t u) {
+	if (x == NULL) {
+		return;
+	}
 	x[7] = (uint8_t) u;
 	u >>= 8;
 	x[6] = (uint8_t) u;
@@ -292,9 +304,12 @@ static size_t crypto_hashblocks_sha256_c(uint8_t *statebytes,
 
 	return inlen;
 }
-
 static size_t crypto_hashblocks_sha512_c(uint8_t *statebytes,
         const uint8_t *in, size_t inlen) {
+	if (statebytes == NULL || in == NULL) {
+		return 0;
+	}
+
 	uint64_t state[8];
 	uint64_t a;
 	uint64_t b;
@@ -500,9 +515,11 @@ static const uint8_t iv_512[64] = {
 	0x2b, 0x3e, 0x6c, 0x1f, 0x1f, 0x83, 0xd9, 0xab, 0xfb, 0x41, 0xbd,
 	0x6b, 0x5b, 0xe0, 0xcd, 0x19, 0x13, 0x7e, 0x21, 0x79
 };
-
 void oqs_sha2_sha224_inc_init_c(sha224ctx *state) {
 	state->ctx = OQS_MEM_checked_malloc(PQC_SHA256CTX_BYTES);
+	if (state->ctx == NULL) {
+		return;
+	}
 
 	for (size_t i = 0; i < 32; ++i) {
 		state->ctx[i] = iv_224[i];
@@ -517,6 +534,9 @@ void oqs_sha2_sha224_inc_init_c(sha224ctx *state) {
 void oqs_sha2_sha256_inc_init_c(sha256ctx *state) {
 	state->data_len = 0;
 	state->ctx = OQS_MEM_checked_malloc(PQC_SHA256CTX_BYTES);
+	if (state->ctx == NULL) {
+		return;
+	}
 
 	for (size_t i = 0; i < 32; ++i) {
 		state->ctx[i] = iv_256[i];
@@ -530,6 +550,9 @@ void oqs_sha2_sha256_inc_init_c(sha256ctx *state) {
 
 void oqs_sha2_sha384_inc_init_c(sha384ctx *state) {
 	state->ctx = OQS_MEM_checked_malloc(PQC_SHA512CTX_BYTES);
+	if (state->ctx == NULL) {
+		return;
+	}
 
 	for (size_t i = 0; i < 64; ++i) {
 		state->ctx[i] = iv_384[i];
@@ -543,6 +566,9 @@ void oqs_sha2_sha384_inc_init_c(sha384ctx *state) {
 
 void oqs_sha2_sha512_inc_init_c(sha512ctx *state) {
 	state->ctx = OQS_MEM_checked_malloc(PQC_SHA512CTX_BYTES);
+	if (state->ctx == NULL) {
+		return;
+	}
 
 	for (size_t i = 0; i < 64; ++i) {
 		state->ctx[i] = iv_512[i];
@@ -556,6 +582,9 @@ void oqs_sha2_sha512_inc_init_c(sha512ctx *state) {
 
 void oqs_sha2_sha224_inc_ctx_clone_c(sha224ctx *stateout, const sha224ctx *statein) {
 	stateout->ctx = OQS_MEM_checked_malloc(PQC_SHA256CTX_BYTES);
+	if (stateout->ctx == NULL) {
+		return;
+	}
 
 	stateout->data_len = statein->data_len;
 	memcpy(stateout->data, statein->data, 128);
@@ -564,6 +593,9 @@ void oqs_sha2_sha224_inc_ctx_clone_c(sha224ctx *stateout, const sha224ctx *state
 
 void oqs_sha2_sha256_inc_ctx_clone_c(sha256ctx *stateout, const sha256ctx *statein) {
 	stateout->ctx = OQS_MEM_checked_malloc(PQC_SHA256CTX_BYTES);
+	if (stateout->ctx == NULL) {
+		return;
+	}
 
 	stateout->data_len = statein->data_len;
 	memcpy(stateout->data, statein->data, 128);
@@ -572,6 +604,9 @@ void oqs_sha2_sha256_inc_ctx_clone_c(sha256ctx *stateout, const sha256ctx *state
 
 void oqs_sha2_sha384_inc_ctx_clone_c(sha384ctx *stateout, const sha384ctx *statein) {
 	stateout->ctx = OQS_MEM_checked_malloc(PQC_SHA512CTX_BYTES);
+	if (stateout->ctx == NULL) {
+		return;
+	}
 
 	stateout->data_len = statein->data_len;
 	memcpy(stateout->data, statein->data, 128);
@@ -580,6 +615,9 @@ void oqs_sha2_sha384_inc_ctx_clone_c(sha384ctx *stateout, const sha384ctx *state
 
 void oqs_sha2_sha512_inc_ctx_clone_c(sha512ctx *stateout, const sha512ctx *statein) {
 	stateout->ctx = OQS_MEM_checked_malloc(PQC_SHA512CTX_BYTES);
+	if (stateout->ctx == NULL) {
+		return;
+	}
 
 	stateout->data_len = statein->data_len;
 	memcpy(stateout->data, statein->data, 128);
@@ -588,25 +626,41 @@ void oqs_sha2_sha512_inc_ctx_clone_c(sha512ctx *stateout, const sha512ctx *state
 
 /* Destroy the hash state. */
 void oqs_sha2_sha224_inc_ctx_release_c(sha224ctx *state) {
-	OQS_MEM_free(state->ctx); // IGNORE free-check
+	if (state->ctx != NULL) {
+		OQS_MEM_free(state->ctx); // IGNORE free-check
+		state->ctx = NULL;
+	}
 }
 
 /* Destroy the hash state. */
 void oqs_sha2_sha256_inc_ctx_release_c(sha256ctx *state) {
-	OQS_MEM_free(state->ctx); // IGNORE free-check
+	if (state->ctx != NULL) {
+		OQS_MEM_free(state->ctx); // IGNORE free-check
+		state->ctx = NULL;
+	}
 }
 
 /* Destroy the hash state. */
 void oqs_sha2_sha384_inc_ctx_release_c(sha384ctx *state) {
-	OQS_MEM_free(state->ctx); // IGNORE free-check
+	if (state->ctx != NULL) {
+		OQS_MEM_free(state->ctx); // IGNORE free-check
+		state->ctx = NULL;
+	}
 }
 
 /* Destroy the hash state. */
 void oqs_sha2_sha512_inc_ctx_release_c(sha512ctx *state) {
-	OQS_MEM_free(state->ctx); // IGNORE free-check
+	if (state->ctx != NULL) {
+		OQS_MEM_free(state->ctx); // IGNORE free-check
+		state->ctx = NULL;
+	}
 }
 
 void oqs_sha2_sha256_inc_blocks_c(sha256ctx *state, const uint8_t *in, size_t inblocks) {
+	if (state == NULL || state->ctx == NULL || in == NULL) {
+		return;
+	}
+
 	uint64_t bytes = load_bigendian_64(state->ctx + 32);
 	size_t tmp_buflen = 64 * inblocks;
 	const uint8_t *new_in;
@@ -615,6 +669,9 @@ void oqs_sha2_sha256_inc_blocks_c(sha256ctx *state, const uint8_t *in, size_t in
 	/*  Process any existing incremental data first */
 	if (state->data_len) {
 		tmp_in = OQS_MEM_checked_malloc(tmp_buflen);
+		if (tmp_in == NULL) {
+			return;
+		}
 
 		memcpy(tmp_in, state->data, state->data_len);
 		memcpy(tmp_in + state->data_len, in, tmp_buflen - state->data_len);
@@ -634,6 +691,10 @@ void oqs_sha2_sha256_inc_blocks_c(sha256ctx *state, const uint8_t *in, size_t in
 }
 
 void oqs_sha2_sha256_inc_c(sha256ctx *state, const uint8_t *in, size_t len) {
+	if (state == NULL || state->ctx == NULL || in == NULL) {
+		return;
+	}
+
 	while (len) {
 		size_t incr = 64 - state->data_len;
 		if (incr > len) {
@@ -662,12 +723,17 @@ void oqs_sha2_sha256_inc_c(sha256ctx *state, const uint8_t *in, size_t len) {
 		state->data_len = 0;
 	}
 }
-
 void oqs_sha2_sha224_inc_blocks_c(sha224ctx *state, const uint8_t *in, size_t inblocks) {
+	if (state == NULL || in == NULL) {
+		return;
+	}
 	oqs_sha2_sha256_inc_blocks_c((sha256ctx *) state, in, inblocks);
 }
 
 void oqs_sha2_sha512_inc_blocks_c(sha512ctx *state, const uint8_t *in, size_t inblocks) {
+	if (state == NULL || in == NULL) {
+		return;
+	}
 	uint64_t bytes = load_bigendian_64(state->ctx + 64);
 
 	crypto_hashblocks_sha512_c(state->ctx, in, 128 * inblocks);
@@ -677,10 +743,17 @@ void oqs_sha2_sha512_inc_blocks_c(sha512ctx *state, const uint8_t *in, size_t in
 }
 
 void oqs_sha2_sha384_inc_blocks_c(sha384ctx *state, const uint8_t *in, size_t inblocks) {
+	if (state == NULL || in == NULL) {
+		return;
+	}
 	oqs_sha2_sha512_inc_blocks_c((sha512ctx *) state, in, inblocks);
 }
 
 void oqs_sha2_sha256_inc_finalize_c(uint8_t *out, sha256ctx *state, const uint8_t *in, size_t inlen) {
+	if (out == NULL || state == NULL) {
+		return;
+	}
+
 	uint8_t padded[128];
 
 	size_t new_inlen = state->data_len + inlen;
@@ -692,6 +765,9 @@ void oqs_sha2_sha256_inc_finalize_c(uint8_t *out, sha256ctx *state, const uint8_
 		new_in = in;
 	} else { //Combine incremental data with final input
 		tmp_in = OQS_MEM_checked_malloc(tmp_len);
+		if (tmp_in == NULL) {
+			return;
+		}
 
 		memcpy(tmp_in, state->data, state->data_len);
 		if (in && inlen) {
@@ -749,6 +825,10 @@ void oqs_sha2_sha256_inc_finalize_c(uint8_t *out, sha256ctx *state, const uint8_
 }
 
 void oqs_sha2_sha224_inc_finalize_c(uint8_t *out, sha224ctx *state, const uint8_t *in, size_t inlen) {
+	if (out == NULL || state == NULL) {
+		return;
+	}
+
 	uint8_t tmp[32];
 	oqs_sha2_sha256_inc_finalize_c(tmp, (sha256ctx *)state, in, inlen);
 
@@ -758,6 +838,10 @@ void oqs_sha2_sha224_inc_finalize_c(uint8_t *out, sha224ctx *state, const uint8_
 }
 
 void oqs_sha2_sha512_inc_finalize_c(uint8_t *out, sha512ctx *state, const uint8_t *in, size_t inlen) {
+	if (out == NULL || state == NULL) {
+		return;
+	}
+
 	uint8_t padded[256];
 	uint64_t bytes = load_bigendian_64(state->ctx + 64) + inlen;
 
@@ -808,6 +892,10 @@ void oqs_sha2_sha512_inc_finalize_c(uint8_t *out, sha512ctx *state, const uint8_
 }
 
 void oqs_sha2_sha384_inc_finalize_c(uint8_t *out, sha384ctx *state, const uint8_t *in, size_t inlen) {
+	if (out == NULL || state == NULL) {
+		return;
+	}
+
 	uint8_t tmp[64];
 	oqs_sha2_sha512_inc_finalize_c(tmp, (sha512ctx *)state, in, inlen);
 
@@ -817,6 +905,10 @@ void oqs_sha2_sha384_inc_finalize_c(uint8_t *out, sha384ctx *state, const uint8_
 }
 
 void oqs_sha2_sha224_c(uint8_t *out, const uint8_t *in, size_t inlen) {
+	if (out == NULL) {
+		return;
+	}
+
 	sha224ctx state;
 
 	oqs_sha2_sha224_inc_init_c(&state);
@@ -824,6 +916,10 @@ void oqs_sha2_sha224_c(uint8_t *out, const uint8_t *in, size_t inlen) {
 }
 
 void oqs_sha2_sha256_c(uint8_t *out, const uint8_t *in, size_t inlen) {
+	if (out == NULL) {
+		return;
+	}
+
 	sha256ctx state;
 
 	oqs_sha2_sha256_inc_init_c(&state);
@@ -831,6 +927,10 @@ void oqs_sha2_sha256_c(uint8_t *out, const uint8_t *in, size_t inlen) {
 }
 
 void oqs_sha2_sha384_c(uint8_t *out, const uint8_t *in, size_t inlen) {
+	if (out == NULL) {
+		return;
+	}
+
 	sha384ctx state;
 
 	oqs_sha2_sha384_inc_init_c(&state);
@@ -838,6 +938,10 @@ void oqs_sha2_sha384_c(uint8_t *out, const uint8_t *in, size_t inlen) {
 }
 
 void oqs_sha2_sha512_c(uint8_t *out, const uint8_t *in, size_t inlen) {
+	if (out == NULL) {
+		return;
+	}
+
 	sha512ctx state;
 
 	oqs_sha2_sha512_inc_init_c(&state);

@@ -171,6 +171,10 @@ static size_t crypto_hashblocks_sha256_armv8(uint8_t *statebytes,
 void oqs_sha2_sha256_inc_finalize_armv8(uint8_t *out, sha256ctx *state, const uint8_t *in, size_t inlen) {
 	uint8_t padded[128];
 
+	if (state == NULL || out == NULL) {
+		return;
+	}
+
 	size_t new_inlen = state->data_len + inlen;
 	size_t tmp_len = new_inlen;
 	const uint8_t *new_in;
@@ -181,6 +185,9 @@ void oqs_sha2_sha256_inc_finalize_armv8(uint8_t *out, sha256ctx *state, const ui
 	} else {
 		// Combine incremental data with final input
 		tmp_in = OQS_MEM_checked_malloc(tmp_len);
+		if (tmp_in == NULL) {
+			return;
+		}
 
 		memcpy(tmp_in, state->data, state->data_len);
 		if (in && inlen) {
@@ -238,6 +245,10 @@ void oqs_sha2_sha256_inc_finalize_armv8(uint8_t *out, sha256ctx *state, const ui
 }
 
 void oqs_sha2_sha224_inc_finalize_armv8(uint8_t *out, sha224ctx *state, const uint8_t *in, size_t inlen) {
+	if (out == NULL || state == NULL) {
+		return;
+	}
+
 	uint8_t tmp[32];
 	oqs_sha2_sha256_inc_finalize_armv8(tmp, (sha256ctx *)state, in, inlen);
 
@@ -247,6 +258,10 @@ void oqs_sha2_sha224_inc_finalize_armv8(uint8_t *out, sha224ctx *state, const ui
 }
 
 void oqs_sha2_sha256_inc_blocks_armv8(sha256ctx *state, const uint8_t *in, size_t inblocks) {
+	if (state == NULL || in == NULL) {
+		return;
+	}
+
 	uint64_t bytes = load_bigendian_64(state->ctx + 32);
 	const uint8_t *new_in;
 	size_t buf_len = 64 * inblocks;
@@ -255,6 +270,9 @@ void oqs_sha2_sha256_inc_blocks_armv8(sha256ctx *state, const uint8_t *in, size_
 	/* Process any existing incremental data first */
 	if (state->data_len) {
 		tmp_in = OQS_MEM_checked_malloc(buf_len);
+		if (tmp_in == NULL) {
+			return;
+		}
 
 		memcpy(tmp_in, state->data, state->data_len);
 		memcpy(tmp_in + state->data_len, in, buf_len - state->data_len);
@@ -274,6 +292,10 @@ void oqs_sha2_sha256_inc_blocks_armv8(sha256ctx *state, const uint8_t *in, size_
 }
 
 void oqs_sha2_sha256_inc_armv8(sha256ctx *state, const uint8_t *in, size_t len) {
+	if (state == NULL || in == NULL) {
+		return;
+	}
+
 	while (len) {
 		size_t incr = 64 - state->data_len;
 		if (incr > len) {
@@ -304,10 +326,17 @@ void oqs_sha2_sha256_inc_armv8(sha256ctx *state, const uint8_t *in, size_t len) 
 }
 
 void oqs_sha2_sha224_inc_blocks_armv8(sha224ctx *state, const uint8_t *in, size_t inblocks) {
+	if (state == NULL || in == NULL) {
+		return;
+	}
 	oqs_sha2_sha256_inc_blocks_armv8((sha256ctx *)state, in, inblocks);
 }
 
 void oqs_sha2_sha256_armv8(uint8_t *out, const uint8_t *in, size_t inlen) {
+	if (out == NULL || in == NULL) {
+		return;
+	}
+
 	sha256ctx state;
 
 	oqs_sha2_sha256_inc_init_c(&state);
@@ -315,6 +344,10 @@ void oqs_sha2_sha256_armv8(uint8_t *out, const uint8_t *in, size_t inlen) {
 }
 
 void oqs_sha2_sha224_armv8(uint8_t *out, const uint8_t *in, size_t inlen) {
+	if (out == NULL || in == NULL) {
+		return;
+	}
+
 	sha224ctx state;
 
 	oqs_sha2_sha224_inc_init_c(&state);
