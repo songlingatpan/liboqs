@@ -83,6 +83,9 @@ void KeccakP1600_StaticInitialize(void) { }
 /* ---------------------------------------------------------------- */
 
 void KeccakP1600_Initialize(void *state) {
+	if (state == NULL) {
+		return;
+	}
 	memset(state, 0, 200);
 	((uint64_t *)state)[ 1] = ~(uint64_t)0;
 	((uint64_t *)state)[ 2] = ~(uint64_t)0;
@@ -95,6 +98,9 @@ void KeccakP1600_Initialize(void *state) {
 /* ---------------------------------------------------------------- */
 
 void KeccakP1600_AddBytesInLane(void *state, unsigned int lanePosition, const unsigned char *data, unsigned int offset, unsigned int length) {
+	if (state == NULL || data == NULL) {
+		return;
+	}
 #if (PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN)
 	uint64_t lane;
 	if (length == 0) {
@@ -120,6 +126,9 @@ void KeccakP1600_AddBytesInLane(void *state, unsigned int lanePosition, const un
 /* ---------------------------------------------------------------- */
 
 void KeccakP1600_AddLanes(void *state, const unsigned char *data, unsigned int laneCount) {
+	if (state == NULL || data == NULL) {
+		return;
+	}
 #if (PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN)
 	unsigned int i = 0;
 	/* If either pointer is misaligned, fall back to byte-wise xor. */
@@ -174,10 +183,16 @@ void KeccakP1600_AddLanes(void *state, const unsigned char *data, unsigned int l
 
 #if (PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN)
 void KeccakP1600_AddByte(void *state, unsigned char byte, unsigned int offset) {
+	if (state == NULL) {
+		return;
+	}
 	((unsigned char *)state)[offset] ^= byte;
 }
 #else
 void KeccakP1600_AddByte(void *state, unsigned char byte, unsigned int offset) {
+	if (state == NULL) {
+		return;
+	}
 	uint64_t lane = byte;
 	lane <<= (offset % 8) * 8;
 	((uint64_t *)state)[offset / 8] ^= lane;
@@ -187,12 +202,18 @@ void KeccakP1600_AddByte(void *state, unsigned char byte, unsigned int offset) {
 /* ---------------------------------------------------------------- */
 
 void KeccakP1600_AddBytes(void *state, const unsigned char *data, unsigned int offset, unsigned int length) {
+	if (state == NULL || data == NULL) {
+		return;
+	}
 	SnP_AddBytes(state, data, offset, length, KeccakP1600_AddLanes, KeccakP1600_AddBytesInLane, 8);
 }
 
 /* ---------------------------------------------------------------- */
 
 void KeccakP1600_OverwriteBytesInLane(void *state, unsigned int lanePosition, const unsigned char *data, unsigned int offset, unsigned int length) {
+	if (state == NULL || data == NULL) {
+		return;
+	}
 #if (PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN)
 	if ((lanePosition == 1) || (lanePosition == 2) || (lanePosition == 8) || (lanePosition == 12) || (lanePosition == 17) || (lanePosition == 20)) {
 		unsigned int i;
@@ -216,15 +237,16 @@ void KeccakP1600_OverwriteBytesInLane(void *state, unsigned int lanePosition, co
 	((uint64_t *)state)[lanePosition] = lane;
 #endif
 }
-
 /* ---------------------------------------------------------------- */
-
 void KeccakP1600_OverwriteLanes(void *state, const unsigned char *data, unsigned int laneCount) {
+	if (state == NULL || data == NULL) {
+		return;
+	}
 #if (PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN)
 	unsigned int lanePosition;
 
 	for (lanePosition = 0; lanePosition < laneCount; lanePosition++) {
-		memcpy(((uint64_t *)state) + lanePosition, data, sizeof(uint64_t));
+		memcpy(((uint64_t *)state) + lanePosition, data + (lanePosition * sizeof(uint64_t)), sizeof(uint64_t));
 		if ((lanePosition == 1) || (lanePosition == 2) || (lanePosition == 8) || (lanePosition == 12) || (lanePosition == 17) || (lanePosition == 20)) {
 			((uint64_t *)state)[lanePosition] = ~((uint64_t *)state)[lanePosition];
 		}
@@ -253,12 +275,18 @@ void KeccakP1600_OverwriteLanes(void *state, const unsigned char *data, unsigned
 /* ---------------------------------------------------------------- */
 
 void KeccakP1600_OverwriteBytes(void *state, const unsigned char *data, unsigned int offset, unsigned int length) {
+	if (state == NULL || data == NULL) {
+		return;
+	}
 	SnP_OverwriteBytes(state, data, offset, length, KeccakP1600_OverwriteLanes, KeccakP1600_OverwriteBytesInLane, 8);
 }
 
 /* ---------------------------------------------------------------- */
 
 void KeccakP1600_OverwriteWithZeroes(void *state, unsigned int byteCount) {
+	if (state == NULL) {
+		return;
+	}
 #if (PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN)
 	unsigned int lanePosition;
 
@@ -304,6 +332,9 @@ void KeccakP1600_OverwriteWithZeroes(void *state, unsigned int byteCount) {
 /* ---------------------------------------------------------------- */
 
 void KeccakP1600_Permute_Nrounds(void *state, unsigned int nr) {
+	if (state == NULL) {
+		return;
+	}
 	declareABCDE
 	unsigned int i;
 	uint64_t *stateAsLanes = (uint64_t *)state;
@@ -311,12 +342,14 @@ void KeccakP1600_Permute_Nrounds(void *state, unsigned int nr) {
 	copyFromState(A, stateAsLanes)
 	roundsN(nr)
 	copyToState(stateAsLanes, A)
-
 }
 
 /* ---------------------------------------------------------------- */
 
 void KeccakP1600_Permute_24rounds(void *state) {
+	if (state == NULL) {
+		return;
+	}
 	declareABCDE
 	uint64_t *stateAsLanes = (uint64_t *)state;
 
@@ -328,6 +361,9 @@ void KeccakP1600_Permute_24rounds(void *state) {
 /* ---------------------------------------------------------------- */
 
 void KeccakP1600_Permute_12rounds(void *state) {
+	if (state == NULL) {
+		return;
+	}
 	declareABCDE
 	uint64_t *stateAsLanes = (uint64_t *)state;
 
@@ -339,6 +375,9 @@ void KeccakP1600_Permute_12rounds(void *state) {
 /* ---------------------------------------------------------------- */
 
 void KeccakP1600_ExtractBytesInLane(const void *state, unsigned int lanePosition, unsigned char *data, unsigned int offset, unsigned int length) {
+	if (state == NULL || data == NULL) {
+		return;
+	}
 	uint64_t lane = ((const uint64_t *)state)[lanePosition];
 	if ((lanePosition == 1) || (lanePosition == 2) || (lanePosition == 8) || (lanePosition == 12) || (lanePosition == 17) || (lanePosition == 20)) {
 		lane = ~lane;
@@ -372,6 +411,9 @@ static void fromWordToBytes(uint8_t *bytes, const uint64_t word) {
 #endif
 
 void KeccakP1600_ExtractLanes(const void *state, unsigned char *data, unsigned int laneCount) {
+	if (state == NULL || data == NULL) {
+		return;
+	}
 #if (PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN)
 	memcpy(data, state, laneCount * 8);
 #else
@@ -404,12 +446,18 @@ void KeccakP1600_ExtractLanes(const void *state, unsigned char *data, unsigned i
 /* ---------------------------------------------------------------- */
 
 void KeccakP1600_ExtractBytes(const void *state, unsigned char *data, unsigned int offset, unsigned int length) {
+	if (state == NULL || data == NULL) {
+		return;
+	}
 	SnP_ExtractBytes(state, data, offset, length, KeccakP1600_ExtractLanes, KeccakP1600_ExtractBytesInLane, 8);
 }
 
 /* ---------------------------------------------------------------- */
 
 void KeccakP1600_ExtractAndAddBytesInLane(const void *state, unsigned int lanePosition, const unsigned char *input, unsigned char *output, unsigned int offset, unsigned int length) {
+	if (state == NULL || input == NULL || output == NULL) {
+		return;
+	}
 	uint64_t lane = ((const uint64_t *)state)[lanePosition];
 	if ((lanePosition == 1) || (lanePosition == 2) || (lanePosition == 8) || (lanePosition == 12) || (lanePosition == 17) || (lanePosition == 20)) {
 		lane = ~lane;
@@ -432,8 +480,11 @@ void KeccakP1600_ExtractAndAddBytesInLane(const void *state, unsigned int lanePo
 }
 
 /* ---------------------------------------------------------------- */
-
 void KeccakP1600_ExtractAndAddLanes(const void *state, const unsigned char *input, unsigned char *output, unsigned int laneCount) {
+	if (state == NULL || input == NULL || output == NULL) {
+		return;
+	}
+
 	unsigned int i;
 #if (PLATFORM_BYTE_ORDER != IS_LITTLE_ENDIAN)
 	unsigned char temp[8];
@@ -479,12 +530,18 @@ void KeccakP1600_ExtractAndAddLanes(const void *state, const unsigned char *inpu
 /* ---------------------------------------------------------------- */
 
 void KeccakP1600_ExtractAndAddBytes(const void *state, const unsigned char *input, unsigned char *output, unsigned int offset, unsigned int length) {
+	if (state == NULL || input == NULL || output == NULL) {
+		return;
+	}
 	SnP_ExtractAndAddBytes(state, input, output, offset, length, KeccakP1600_ExtractAndAddLanes, KeccakP1600_ExtractAndAddBytesInLane, 8);
 }
 
 /* ---------------------------------------------------------------- */
 
 size_t KeccakF1600_FastLoop_Absorb(void *state, unsigned int laneCount, const unsigned char *data, size_t dataByteLen) {
+	if (state == NULL || data == NULL) {
+		return 0;
+	}
 	size_t originalDataByteLen = dataByteLen;
 	declareABCDE
 	uint64_t *stateAsLanes = (uint64_t *)state;
@@ -503,6 +560,9 @@ size_t KeccakF1600_FastLoop_Absorb(void *state, unsigned int laneCount, const un
 /* ---------------------------------------------------------------- */
 
 size_t KeccakP1600_12rounds_FastLoop_Absorb(void *state, unsigned int laneCount, const unsigned char *data, size_t dataByteLen) {
+	if (state == NULL || data == NULL) {
+		return 0;
+	}
 	size_t originalDataByteLen = dataByteLen;
 	declareABCDE
 	uint64_t *stateAsLanes = (uint64_t *)state;

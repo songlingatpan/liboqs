@@ -72,12 +72,18 @@ static void keccak_x4_inc_reset(uint64_t *s) {
 		Keccak_X4_Dispatch();
 	}
 #endif
-	(*Keccak_X4_Initialize_ptr)(s);
-	s[100] = 0;
+	if (Keccak_X4_Initialize_ptr != NULL) {
+		(*Keccak_X4_Initialize_ptr)(s);
+		s[100] = 0;
+	}
 }
 
 static void keccak_x4_inc_absorb(uint64_t *s, uint32_t r,
                                  const uint8_t *in0, const uint8_t *in1, const uint8_t *in2, const uint8_t *in3, size_t inlen) {
+	if (s == NULL || Keccak_X4_AddBytes_ptr == NULL || Keccak_X4_Permute_ptr == NULL) {
+		return;
+	}
+
 	uint64_t c = r - s[100];
 
 	if (s[100] && inlen >= c) {
@@ -115,6 +121,10 @@ static void keccak_x4_inc_absorb(uint64_t *s, uint32_t r,
 }
 
 static void keccak_x4_inc_finalize(uint64_t *s, uint32_t r, uint8_t p) {
+	if (s == NULL || Keccak_X4_AddByte_ptr == NULL) {
+		return;
+	}
+
 	(*Keccak_X4_AddByte_ptr)(s, 0, p, (unsigned int)s[100]);
 	(*Keccak_X4_AddByte_ptr)(s, 1, p, (unsigned int)s[100]);
 	(*Keccak_X4_AddByte_ptr)(s, 2, p, (unsigned int)s[100]);
@@ -130,6 +140,9 @@ static void keccak_x4_inc_finalize(uint64_t *s, uint32_t r, uint8_t p) {
 
 static void keccak_x4_inc_squeeze(uint8_t *out0, uint8_t *out1, uint8_t *out2, uint8_t *out3,
                                   size_t outlen, uint64_t *s, uint32_t r) {
+	if (s == NULL || Keccak_X4_ExtractBytes_ptr == NULL || Keccak_X4_Permute_ptr == NULL) {
+		return;
+	}
 
 	while (outlen > s[100]) {
 		(*Keccak_X4_ExtractBytes_ptr)(s, 0, out0, (unsigned int)(r - s[100]), (unsigned int)s[100]);
@@ -158,41 +171,57 @@ static void keccak_x4_inc_squeeze(uint8_t *out0, uint8_t *out1, uint8_t *out2, u
 static void SHA3_shake128_x4(uint8_t *out0, uint8_t *out1, uint8_t *out2, uint8_t *out3, size_t outlen, const uint8_t *in0, const uint8_t *in1, const uint8_t *in2, const uint8_t *in3, size_t inlen) {
 	OQS_SHA3_shake128_x4_inc_ctx s;
 	OQS_SHA3_shake128_x4_inc_init(&s);
-	OQS_SHA3_shake128_x4_inc_absorb(&s, in0, in1, in2, in3, inlen);
-	OQS_SHA3_shake128_x4_inc_finalize(&s);
-	OQS_SHA3_shake128_x4_inc_squeeze(out0, out1, out2, out3, outlen, &s);
-	OQS_SHA3_shake128_x4_inc_ctx_release(&s);
+	if (s.ctx != NULL) {
+		OQS_SHA3_shake128_x4_inc_absorb(&s, in0, in1, in2, in3, inlen);
+		OQS_SHA3_shake128_x4_inc_finalize(&s);
+		OQS_SHA3_shake128_x4_inc_squeeze(out0, out1, out2, out3, outlen, &s);
+		OQS_SHA3_shake128_x4_inc_ctx_release(&s);
+	}
 }
 
 /* SHAKE128 incremental */
 
 static void SHA3_shake128_x4_inc_init(OQS_SHA3_shake128_x4_inc_ctx *state) {
 	state->ctx = OQS_MEM_checked_aligned_alloc(KECCAK_X4_CTX_ALIGNMENT, KECCAK_X4_CTX_BYTES);
-	keccak_x4_inc_reset((uint64_t *)state->ctx);
+	if (state->ctx != NULL) {
+		keccak_x4_inc_reset((uint64_t *)state->ctx);
+	}
 }
 
 static void SHA3_shake128_x4_inc_absorb(OQS_SHA3_shake128_x4_inc_ctx *state, const uint8_t *in0, const uint8_t *in1, const uint8_t *in2, const uint8_t *in3, size_t inlen) {
-	keccak_x4_inc_absorb((uint64_t *)state->ctx, OQS_SHA3_SHAKE128_RATE, in0, in1, in2, in3, inlen);
+	if (state->ctx != NULL) {
+		keccak_x4_inc_absorb((uint64_t *)state->ctx, OQS_SHA3_SHAKE128_RATE, in0, in1, in2, in3, inlen);
+	}
 }
 
 static void SHA3_shake128_x4_inc_finalize(OQS_SHA3_shake128_x4_inc_ctx *state) {
-	keccak_x4_inc_finalize((uint64_t *)state->ctx, OQS_SHA3_SHAKE128_RATE, 0x1F);
+	if (state->ctx != NULL) {
+		keccak_x4_inc_finalize((uint64_t *)state->ctx, OQS_SHA3_SHAKE128_RATE, 0x1F);
+	}
 }
 
 static void SHA3_shake128_x4_inc_squeeze(uint8_t *out0, uint8_t *out1, uint8_t *out2, uint8_t *out3, size_t outlen, OQS_SHA3_shake128_x4_inc_ctx *state) {
-	keccak_x4_inc_squeeze(out0, out1, out2, out3, outlen, (uint64_t *)state->ctx, OQS_SHA3_SHAKE128_RATE);
+	if (state->ctx != NULL) {
+		keccak_x4_inc_squeeze(out0, out1, out2, out3, outlen, (uint64_t *)state->ctx, OQS_SHA3_SHAKE128_RATE);
+	}
 }
-
 static void SHA3_shake128_x4_inc_ctx_clone(OQS_SHA3_shake128_x4_inc_ctx *dest, const OQS_SHA3_shake128_x4_inc_ctx *src) {
-	memcpy(dest->ctx, src->ctx, KECCAK_X4_CTX_BYTES);
+	if (dest && src && dest->ctx && src->ctx) {
+		memcpy(dest->ctx, src->ctx, KECCAK_X4_CTX_BYTES);
+	}
 }
 
 static void SHA3_shake128_x4_inc_ctx_release(OQS_SHA3_shake128_x4_inc_ctx *state) {
-	OQS_MEM_aligned_free(state->ctx);
+	if (state) {
+		OQS_MEM_aligned_free(state->ctx);
+		state->ctx = NULL;
+	}
 }
 
 static void SHA3_shake128_x4_inc_ctx_reset(OQS_SHA3_shake128_x4_inc_ctx *state) {
-	keccak_x4_inc_reset((uint64_t *)state->ctx);
+	if (state && state->ctx) {
+		keccak_x4_inc_reset((uint64_t *)state->ctx);
+	}
 }
 
 /********** SHAKE256 ***********/
@@ -200,41 +229,60 @@ static void SHA3_shake128_x4_inc_ctx_reset(OQS_SHA3_shake128_x4_inc_ctx *state) 
 static void SHA3_shake256_x4(uint8_t *out0, uint8_t *out1, uint8_t *out2, uint8_t *out3, size_t outlen, const uint8_t *in0, const uint8_t *in1, const uint8_t *in2, const uint8_t *in3, size_t inlen) {
 	OQS_SHA3_shake256_x4_inc_ctx s;
 	OQS_SHA3_shake256_x4_inc_init(&s);
-	OQS_SHA3_shake256_x4_inc_absorb(&s, in0, in1, in2, in3, inlen);
-	OQS_SHA3_shake256_x4_inc_finalize(&s);
-	OQS_SHA3_shake256_x4_inc_squeeze(out0, out1, out2, out3, outlen, &s);
-	OQS_SHA3_shake256_x4_inc_ctx_release(&s);
+	if (s.ctx != NULL) {
+		OQS_SHA3_shake256_x4_inc_absorb(&s, in0, in1, in2, in3, inlen);
+		OQS_SHA3_shake256_x4_inc_finalize(&s);
+		OQS_SHA3_shake256_x4_inc_squeeze(out0, out1, out2, out3, outlen, &s);
+		OQS_SHA3_shake256_x4_inc_ctx_release(&s);
+	}
 }
 
 /* SHAKE256 incremental */
 
 static void SHA3_shake256_x4_inc_init(OQS_SHA3_shake256_x4_inc_ctx *state) {
-	state->ctx = OQS_MEM_checked_aligned_alloc(KECCAK_X4_CTX_ALIGNMENT, KECCAK_X4_CTX_BYTES);
-	keccak_x4_inc_reset((uint64_t *)state->ctx);
+	if (state) {
+		state->ctx = OQS_MEM_checked_aligned_alloc(KECCAK_X4_CTX_ALIGNMENT, KECCAK_X4_CTX_BYTES);
+		if (state->ctx) {
+			keccak_x4_inc_reset((uint64_t *)state->ctx);
+		}
+	}
 }
 
 static void SHA3_shake256_x4_inc_absorb(OQS_SHA3_shake256_x4_inc_ctx *state, const uint8_t *in0, const uint8_t *in1, const uint8_t *in2, const uint8_t *in3, size_t inlen) {
-	keccak_x4_inc_absorb((uint64_t *)state->ctx, OQS_SHA3_SHAKE256_RATE, in0, in1, in2, in3, inlen);
+	if (state && state->ctx) {
+		keccak_x4_inc_absorb((uint64_t *)state->ctx, OQS_SHA3_SHAKE256_RATE, in0, in1, in2, in3, inlen);
+	}
 }
 
 static void SHA3_shake256_x4_inc_finalize(OQS_SHA3_shake256_x4_inc_ctx *state) {
-	keccak_x4_inc_finalize((uint64_t *)state->ctx, OQS_SHA3_SHAKE256_RATE, 0x1F);
+	if (state && state->ctx) {
+		keccak_x4_inc_finalize((uint64_t *)state->ctx, OQS_SHA3_SHAKE256_RATE, 0x1F);
+	}
 }
 
 static void SHA3_shake256_x4_inc_squeeze(uint8_t *out0, uint8_t *out1, uint8_t *out2, uint8_t *out3, size_t outlen, OQS_SHA3_shake256_x4_inc_ctx *state) {
-	keccak_x4_inc_squeeze(out0, out1, out2, out3, outlen, (uint64_t *)state->ctx, OQS_SHA3_SHAKE256_RATE);
+	if (state && state->ctx) {
+		keccak_x4_inc_squeeze(out0, out1, out2, out3, outlen, (uint64_t *)state->ctx, OQS_SHA3_SHAKE256_RATE);
+	}
 }
 
 static void SHA3_shake256_x4_inc_ctx_clone(OQS_SHA3_shake256_x4_inc_ctx *dest, const OQS_SHA3_shake256_x4_inc_ctx *src) {
-	memcpy(dest->ctx, src->ctx, KECCAK_X4_CTX_BYTES);
+	if (dest && src && dest->ctx && src->ctx) {
+		memcpy(dest->ctx, src->ctx, KECCAK_X4_CTX_BYTES);
+	}
 }
 
 static void SHA3_shake256_x4_inc_ctx_release(OQS_SHA3_shake256_x4_inc_ctx *state) {
-	OQS_MEM_aligned_free(state->ctx);
+	if (state) {
+		OQS_MEM_aligned_free(state->ctx);
+		state->ctx = NULL;
+	}
 }
 
 static void SHA3_shake256_x4_inc_ctx_reset(OQS_SHA3_shake256_x4_inc_ctx *state) {
-	keccak_x4_inc_reset((uint64_t *)state->ctx);
+	if (state && state->ctx) {
+		keccak_x4_inc_reset((uint64_t *)state->ctx);
+	}
 }
 
 extern struct OQS_SHA3_x4_callbacks sha3_x4_default_callbacks;

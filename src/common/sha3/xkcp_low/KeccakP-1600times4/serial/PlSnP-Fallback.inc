@@ -70,7 +70,6 @@ Please refer to PlSnP-documentation.h for more details.
 #define SnP_ExtractLanesAll             JOIN(SnP_prefix, ExtractLanesAll, SnP_suffix)
 #define SnP_ExtractAndAddBytes          JOIN(SnP_prefix, ExtractAndAddBytes, SnP_suffix)
 #define SnP_ExtractAndAddLanesAll       JOIN(SnP_prefix, ExtractAndAddLanesAll, SnP_suffix)
-
 void PlSnP_StaticInitialize( void )
 {
     SnP_StaticInitialize();
@@ -79,6 +78,10 @@ void PlSnP_StaticInitialize( void )
 void PlSnP_InitializeAll(void *states)
 {
     unsigned int i;
+
+    if (states == NULL) {
+        return;
+    }
 
     for(i=0; i<PlSnP_factor; i++)
     #if (PlSnP_baseParallelism == 1)
@@ -90,6 +93,10 @@ void PlSnP_InitializeAll(void *states)
 
 void PlSnP_AddByte(void *states, unsigned int instanceIndex, unsigned char byte, unsigned int offset)
 {
+    if (states == NULL) {
+        return;
+    }
+
     #if (PlSnP_baseParallelism == 1)
         SnP_AddByte(stateWithIndex(instanceIndex), byte, offset);
     #else
@@ -99,6 +106,10 @@ void PlSnP_AddByte(void *states, unsigned int instanceIndex, unsigned char byte,
 
 void PlSnP_AddBytes(void *states, unsigned int instanceIndex, const unsigned char *data, unsigned int offset, unsigned int length)
 {
+    if (states == NULL || data == NULL) {
+        return;
+    }
+
     #if (PlSnP_baseParallelism == 1)
         SnP_AddBytes(stateWithIndex(instanceIndex), data, offset, length);
     #else
@@ -109,6 +120,10 @@ void PlSnP_AddBytes(void *states, unsigned int instanceIndex, const unsigned cha
 void PlSnP_AddLanesAll(void *states, const unsigned char *data, unsigned int laneCount, unsigned int laneOffset)
 {
     unsigned int i;
+
+    if (states == NULL || data == NULL) {
+        return;
+    }
 
     for(i=0; i<PlSnP_factor; i++) {
         #if (PlSnP_baseParallelism == 1)
@@ -122,6 +137,10 @@ void PlSnP_AddLanesAll(void *states, const unsigned char *data, unsigned int lan
 
 void PlSnP_OverwriteBytes(void *states, unsigned int instanceIndex, const unsigned char *data, unsigned int offset, unsigned int length)
 {
+    if (states == NULL || data == NULL) {
+        return;
+    }
+
     #if (PlSnP_baseParallelism == 1)
         SnP_OverwriteBytes(stateWithIndex(instanceIndex), data, offset, length);
     #else
@@ -132,6 +151,10 @@ void PlSnP_OverwriteBytes(void *states, unsigned int instanceIndex, const unsign
 void PlSnP_OverwriteLanesAll(void *states, const unsigned char *data, unsigned int laneCount, unsigned int laneOffset)
 {
     unsigned int i;
+
+    if (states == NULL || data == NULL) {
+        return;
+    }
 
     for(i=0; i<PlSnP_factor; i++) {
         #if (PlSnP_baseParallelism == 1)
@@ -145,6 +168,10 @@ void PlSnP_OverwriteLanesAll(void *states, const unsigned char *data, unsigned i
 
 void PlSnP_OverwriteWithZeroes(void *states, unsigned int instanceIndex, unsigned int byteCount)
 {
+    if (states == NULL) {
+        return;
+    }
+
     #if (PlSnP_baseParallelism == 1)
         SnP_OverwriteWithZeroes(stateWithIndex(instanceIndex), byteCount);
     #else
@@ -155,6 +182,10 @@ void PlSnP_OverwriteWithZeroes(void *states, unsigned int instanceIndex, unsigne
 void PlSnP_PermuteAll(void *states)
 {
     unsigned int i;
+
+    if (states == NULL) {
+        return;
+    }
 
     for(i=0; i<PlSnP_factor; i++) {
         #if (PlSnP_baseParallelism == 1)
@@ -169,6 +200,10 @@ void PlSnP_PermuteAll(void *states)
 void PlSnP_PermuteAll_12rounds(void *states)
 {
     unsigned int i;
+
+    if (states == NULL) {
+        return;
+    }
 
     for(i=0; i<PlSnP_factor; i++) {
         #if (PlSnP_baseParallelism == 1)
@@ -185,6 +220,10 @@ void PlSnP_PermuteAll_6rounds(void *states)
 {
     unsigned int i;
 
+    if (states == NULL) {
+        return;
+    }
+
     for(i=0; i<PlSnP_factor; i++) {
         #if (PlSnP_baseParallelism == 1)
             SnP_Permute_Nrounds(stateWithIndex(i), 6);
@@ -200,6 +239,10 @@ void PlSnP_PermuteAll_4rounds(void *states)
 {
     unsigned int i;
 
+    if (states == NULL) {
+        return;
+    }
+
     for(i=0; i<PlSnP_factor; i++) {
         #if (PlSnP_baseParallelism == 1)
             SnP_Permute_Nrounds(stateWithIndex(i), 4);
@@ -212,6 +255,10 @@ void PlSnP_PermuteAll_4rounds(void *states)
 
 void PlSnP_ExtractBytes(void *states, unsigned int instanceIndex, unsigned char *data, unsigned int offset, unsigned int length)
 {
+    if (states == NULL || data == NULL) {
+        return;
+    }
+
     #if (PlSnP_baseParallelism == 1)
         SnP_ExtractBytes(stateWithIndex(instanceIndex), data, offset, length);
     #else
@@ -223,6 +270,10 @@ void PlSnP_ExtractLanesAll(void *states, unsigned char *data, unsigned int laneC
 {
     unsigned int i;
 
+    if (states == NULL || data == NULL) {
+        return;
+    }
+
     for(i=0; i<PlSnP_factor; i++) {
         #if (PlSnP_baseParallelism == 1)
             SnP_ExtractBytes(stateWithIndex(i), data, 0, laneCount*SnP_laneLengthInBytes);
@@ -232,9 +283,12 @@ void PlSnP_ExtractLanesAll(void *states, unsigned char *data, unsigned int laneC
         data += laneOffset*SnP_laneLengthInBytes*PlSnP_baseParallelism;
     }
 }
-
 void PlSnP_ExtractAndAddBytes(void *states, unsigned int instanceIndex, const unsigned char *input, unsigned char *output, unsigned int offset, unsigned int length)
 {
+    if (states == NULL || input == NULL || output == NULL) {
+        return;
+    }
+
     #if (PlSnP_baseParallelism == 1)
         SnP_ExtractAndAddBytes(stateWithIndex(instanceIndex), input, output, offset, length);
     #else
@@ -245,6 +299,10 @@ void PlSnP_ExtractAndAddBytes(void *states, unsigned int instanceIndex, const un
 void PlSnP_ExtractAndAddLanesAll(void *states, const unsigned char *input, unsigned char *output, unsigned int laneCount, unsigned int laneOffset)
 {
     unsigned int i;
+
+    if (states == NULL || input == NULL || output == NULL) {
+        return;
+    }
 
     for(i=0; i<PlSnP_factor; i++) {
         #if (PlSnP_baseParallelism == 1)
