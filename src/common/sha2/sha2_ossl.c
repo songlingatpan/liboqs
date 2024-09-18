@@ -20,9 +20,12 @@ static void do_hash(uint8_t *output, const uint8_t *input, size_t inplen, const 
 	if (mdctx == NULL) {
 		OQS_EXIT("OpenSSL");
 	}
-	OQS_OPENSSL_GUARD(OSSL_FUNC(EVP_DigestInit_ex)(mdctx, md, NULL));
-	OQS_OPENSSL_GUARD(OSSL_FUNC(EVP_DigestUpdate)(mdctx, input, inplen));
-	OQS_OPENSSL_GUARD(OSSL_FUNC(EVP_DigestFinal_ex)(mdctx, output, &outlen));
+	if (OSSL_FUNC(EVP_DigestInit_ex)(mdctx, md, NULL) != 1 ||
+	        OSSL_FUNC(EVP_DigestUpdate)(mdctx, input, inplen) != 1 ||
+	        OSSL_FUNC(EVP_DigestFinal_ex)(mdctx, output, &outlen) != 1) {
+		OSSL_FUNC(EVP_MD_CTX_free)(mdctx);
+		OQS_EXIT("OpenSSL");
+	}
 	OSSL_FUNC(EVP_MD_CTX_free)(mdctx);
 }
 
@@ -66,7 +69,10 @@ static void SHA2_sha256_inc_init(OQS_SHA2_sha256_ctx *state) {
 	if (mdctx == NULL) {
 		OQS_EXIT("OpenSSL");
 	}
-	OQS_OPENSSL_GUARD(OSSL_FUNC(EVP_DigestInit_ex)(mdctx, md, NULL));
+	if (OSSL_FUNC(EVP_DigestInit_ex)(mdctx, md, NULL) != 1) {
+		OSSL_FUNC(EVP_MD_CTX_free)(mdctx);
+		OQS_EXIT("OpenSSL");
+	}
 	state->ctx = mdctx;
 }
 
@@ -111,7 +117,10 @@ static void SHA2_sha384_inc_init(OQS_SHA2_sha384_ctx *state) {
 	if (mdctx == NULL) {
 		OQS_EXIT("OpenSSL");
 	}
-	OQS_OPENSSL_GUARD(OSSL_FUNC(EVP_DigestInit_ex)(mdctx, md, NULL));
+	if (OSSL_FUNC(EVP_DigestInit_ex)(mdctx, md, NULL) != 1) {
+		OSSL_FUNC(EVP_MD_CTX_free)(mdctx);
+		OQS_EXIT("OpenSSL");
+	}
 	state->ctx = mdctx;
 }
 
@@ -135,7 +144,6 @@ static void SHA2_sha384_inc_ctx_release(OQS_SHA2_sha384_ctx *state) {
 		state->ctx = NULL;
 	}
 }
-
 static void SHA2_sha384_inc_ctx_clone(OQS_SHA2_sha384_ctx *dest, const OQS_SHA2_sha384_ctx *src) {
 	SHA2_sha384_inc_init(dest);
 	OQS_OPENSSL_GUARD(OSSL_FUNC(EVP_MD_CTX_copy_ex)((EVP_MD_CTX *) dest->ctx, (EVP_MD_CTX *) src->ctx));
@@ -152,7 +160,10 @@ static void SHA2_sha512_inc_init(OQS_SHA2_sha512_ctx *state) {
 	if (mdctx == NULL) {
 		OQS_EXIT("OpenSSL");
 	}
-	OQS_OPENSSL_GUARD(OSSL_FUNC(EVP_DigestInit_ex)(mdctx, md, NULL));
+	if (OSSL_FUNC(EVP_DigestInit_ex)(mdctx, md, NULL) != 1) {
+		OSSL_FUNC(EVP_MD_CTX_free)(mdctx);
+		OQS_EXIT("OpenSSL");
+	}
 	state->ctx = mdctx;
 }
 
@@ -203,5 +214,4 @@ struct OQS_SHA2_callbacks sha2_default_callbacks = {
 	SHA2_sha512_inc_finalize,
 	SHA2_sha512_inc_ctx_release,
 };
-
 #endif
