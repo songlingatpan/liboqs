@@ -14,6 +14,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wcast-qual)
     add_compile_options(-Wnarrowing)
     add_compile_options(-Wconversion)
+    add_compile_options(-Wno-error=macro-redefined)
 endif()
 
 set(OSSL_HELPERS "")
