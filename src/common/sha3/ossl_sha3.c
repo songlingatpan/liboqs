@@ -243,33 +243,11 @@ static void SHA3_shake128_inc_init(OQS_SHA3_shake128_inc_ctx *state) {
 		return;
 	}
 	s->n_out = 0;
-	OSSL_FUNC(EVP_DigestInit_ex)(s->mdctx, oqs_shake128(), NULL);
-}
-
-static void SHA3_shake128_inc_init(OQS_SHA3_shake128_inc_ctx *state) {
-	state->ctx = OQS_MEM_malloc(sizeof(intrn_shake128_inc_ctx));
-	if (state->ctx == NULL) {
-		return;
-	}
-
-	intrn_shake128_inc_ctx *s = (intrn_shake128_inc_ctx *)state->ctx;
-	s->mdctx = OSSL_FUNC(EVP_MD_CTX_new)();
-	if (s->mdctx == NULL) {
-		OQS_MEM_free(state->ctx);
-		state->ctx = NULL;
-		return;
-	}
-	s->n_out = 0;
 	if (OSSL_FUNC(EVP_DigestInit_ex)(s->mdctx, oqs_shake128(), NULL) != 1) {
 		OSSL_FUNC(EVP_MD_CTX_free)(s->mdctx);
 		OQS_MEM_free(state->ctx);
 		state->ctx = NULL;
 	}
-}
-
-static void SHA3_shake128_inc_absorb(OQS_SHA3_shake128_inc_ctx *state, const uint8_t *input, size_t inplen) {
-	intrn_shake128_inc_ctx *s = (intrn_shake128_inc_ctx *)state->ctx;
-	OSSL_FUNC(EVP_DigestUpdate)(s->mdctx, input, inplen);
 }
 
 static void SHA3_shake128_inc_finalize(OQS_SHA3_shake128_inc_ctx *state) {
