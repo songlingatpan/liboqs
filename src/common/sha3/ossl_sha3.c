@@ -250,6 +250,11 @@ static void SHA3_shake128_inc_init(OQS_SHA3_shake128_inc_ctx *state) {
 	}
 }
 
+static void SHA3_shake128_inc_absorb(OQS_SHA3_shake128_inc_ctx *state, const uint8_t *input, size_t inplen) {
+	intrn_shake128_inc_ctx *s = (intrn_shake128_inc_ctx *)state->ctx;
+	OSSL_FUNC(EVP_DigestUpdate)(s->mdctx, input, inplen);
+}
+
 static void SHA3_shake128_inc_finalize(OQS_SHA3_shake128_inc_ctx *state) {
 	(void)state;
 }
