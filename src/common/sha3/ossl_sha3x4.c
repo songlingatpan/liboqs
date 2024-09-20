@@ -418,6 +418,22 @@ static void SHA3_shake256_x4_inc_ctx_reset(OQS_SHA3_shake256_x4_inc_ctx *state) 
 		return;
 	}
 	intrn_shake256_x4_inc_ctx *s = (intrn_shake256_x4_inc_ctx *)state->ctx;
+	OSSL_FUNC(EVP_MD_CTX_reset)(s->mdctx0);
+	OSSL_FUNC(EVP_MD_CTX_reset)(s->mdctx1);
+	OSSL_FUNC(EVP_MD_CTX_reset)(s->mdctx2);
+	OSSL_FUNC(EVP_MD_CTX_reset)(s->mdctx3);
+	if (OSSL_FUNC(EVP_DigestInit_ex)(s->mdctx0, oqs_shake256(), NULL) != 1 ||
+	    OSSL_FUNC(EVP_DigestInit_ex)(s->mdctx1, oqs_shake256(), NULL) != 1 ||
+	    OSSL_FUNC(EVP_DigestInit_ex)(s->mdctx2, oqs_shake256(), NULL) != 1 ||
+	    OSSL_FUNC(EVP_DigestInit_ex)(s->mdctx3, oqs_shake256(), NULL) != 1) {
+		OSSL_FUNC(EVP_MD_CTX_reset)(s->mdctx0);
+		OSSL_FUNC(EVP_MD_CTX_reset)(s->mdctx1);
+		OSSL_FUNC(EVP_MD_CTX_reset)(s->mdctx2);
+		OSSL_FUNC(EVP_MD_CTX_reset)(s->mdctx3);
+		return;
+	}
+	s->n_out = 0;
+}
 	extern struct OQS_SHA3_x4_callbacks sha3_x4_default_callbacks;
 
 	struct OQS_SHA3_x4_callbacks sha3_x4_default_callbacks = {
