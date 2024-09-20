@@ -35,6 +35,10 @@ if(OQS_USE_PTHREADS)
     set(TEST_DEPS ${TEST_DEPS} Threads::Threads)
 endif()
 
+# Link OpenSSL libcrypto
+find_package(OpenSSL REQUIRED)
+set(TEST_DEPS ${TEST_DEPS} OpenSSL::Crypto)
+
 if(NOT WIN32)
     execute_process(COMMAND ${PROJECT_SOURCE_DIR}/scripts/git_commit.sh OUTPUT_VARIABLE GIT_COMMIT)
     add_definitions(-DOQS_COMPILE_GIT_COMMIT="${GIT_COMMIT}")
