@@ -246,27 +246,6 @@ static void SHA3_shake128_inc_init(OQS_SHA3_shake128_inc_ctx *state) {
 	OSSL_FUNC(EVP_DigestInit_ex)(s->mdctx, oqs_shake128(), NULL);
 }
 
-static void SHA3_shake128_inc_absorb(OQS_SHA3_shake128_inc_ctx *state, const uint8_t *input, size_t inplen) {
-	intrn_shake128_inc_ctx *s = (intrn_shake128_inc_ctx *)state->ctx;
-	OSSL_FUNC(EVP_DigestUpdate)(s->mdctx, input, inplen);
-}
-
-static void SHA3_shake128_inc_finalize(OQS_SHA3_shake128_inc_ctx *state) {
-	(void)state;
-}
-*When we need to squeeze `k` new bytes from the state, we
-*      - clone the state,
-*      - dynamically allocate a buffer of size n + k,
-*      - call EVP_DigestFinalXOF(clone, internal buffer, n + k)
-*      - copy the last k bytes of the output back to the caller.
-* When n = 0 we use the output buffer directly.
-           * /
-
-typedef struct {
-	EVP_MD_CTX *mdctx;
-	size_t n_out;
-} intrn_shake128_inc_ctx;
-
 static void SHA3_shake128_inc_init(OQS_SHA3_shake128_inc_ctx *state) {
 	state->ctx = OQS_MEM_malloc(sizeof(intrn_shake128_inc_ctx));
 	if (state->ctx == NULL) {
