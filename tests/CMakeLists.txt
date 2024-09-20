@@ -23,6 +23,7 @@ endif()
 
 if(OQS_USE_OPENSSL)
     include_directories(${OPENSSL_INCLUDE_DIR})
+    set(TEST_DEPS ${TEST_DEPS} OpenSSL::Crypto)
 endif()
 
 if(NOT WIN32)
@@ -34,10 +35,6 @@ set(TEST_DEPS oqs oqs-internal ${LIBM})
 if(OQS_USE_PTHREADS)
     set(TEST_DEPS ${TEST_DEPS} Threads::Threads)
 endif()
-
-# Link OpenSSL libcrypto
-find_package(OpenSSL REQUIRED)
-set(TEST_DEPS ${TEST_DEPS} OpenSSL::Crypto)
 
 if(NOT WIN32)
     execute_process(COMMAND ${PROJECT_SOURCE_DIR}/scripts/git_commit.sh OUTPUT_VARIABLE GIT_COMMIT)
