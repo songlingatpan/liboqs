@@ -233,6 +233,16 @@ static void SHA3_shake128_x4_inc_ctx_reset(OQS_SHA3_shake128_x4_inc_ctx *state) 
 	s->n_out = 0;
 }
 
+/* SHAKE-256 */
+
+static void SHA3_shake256_x4(uint8_t *output0, uint8_t *output1, uint8_t *output2, uint8_t *output3, size_t outlen,
+                             const uint8_t *in0, const uint8_t *in1, const uint8_t *in2, const uint8_t *in3, size_t inplen) {
+	OQS_SHA3_shake256(output0, outlen, in0, inplen);
+	OQS_SHA3_shake256(output1, outlen, in1, inplen);
+	OQS_SHA3_shake256(output2, outlen, in2, inplen);
+	OQS_SHA3_shake256(output3, outlen, in3, inplen);
+}
+
 /* SHAKE256 incremental */
 
 typedef struct {
